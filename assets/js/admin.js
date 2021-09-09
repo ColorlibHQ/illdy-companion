@@ -36,30 +36,35 @@ var illdyCompanionImporter = {
 
             } );
 
-            jQuery.ajax( {
-                  type: 'POST',
-                  data: { action: 'welcome_screen_ajax_callback', args: args },
-                  dataType: 'json',
-                  url: ajaxurl,
-                  success: function() {
-                    location.reload();
-                  },
-                  /**
-                   * Throw errors
-                   *
-                   * @param jqXHR
-                   * @param textStatus
-                   * @param errorThrown
-                   */
-                  error: function( jqXHR, textStatus, errorThrown ) {
-                    console.log( jqXHR + ' :: ' + textStatus + ' :: ' + errorThrown );
-                  }
+      jQuery.ajax({
+        type: 'POST',
+        data: { action: 'welcome_screen_ajax_callback', args: args },
+        dataType: 'json',
+        url: ajaxurl,
+        success: function () {
+          if (container.length) {
+            container.html('<h3>Demo content was imported successfully! </h3>');
 
-                } );
-
-          } );
-      }
-
+            window.setTimeout(function () {
+              container.slideUp(300, function () {
+                container.remove();
+              });
+            }, 3000);
+          }
+        },
+        /**
+         * Throw errors
+         *
+         * @param jqXHR
+         * @param textStatus
+         * @param errorThrown
+         */
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.log(jqXHR + ' :: ' + textStatus + ' :: ' + errorThrown);
+        },
+      });
+    });
+  },
 };
 
 jQuery( document ).ready(function() {
