@@ -21,7 +21,7 @@ class Illdy_Companion_Import_Data {
 			$url  = 'themes.php?page=%1$s-welcome&tab=%2$s';
 			$html = '<a class="button button-primary" id="" href="' . esc_url( admin_url( sprintf( $url, 'illdy', 'recommended-actions' ) ) ) . '">' . __( 'Import Demo Content', 'illdy-companion' ) . '</a>';
 		} else {
-			$html  = '<p><a class="button button-primary epsilon-ajax-button" id="add_default_sections" href="#">' . __( 'Import Demo Content', 'illdy-companion' ) . '</a>';
+			$html  = '<p><a class="button button-primary epsilon-ajax-button cpo-import-butto" id="add_default_sections" data-action="import_demo" href="#">' . __( 'Import Demo Content', 'illdy-companion' ) . '</a>';
 			$html .= '<a class="button epsilon-hidden-content-toggler" href="#welcome-hidden-content">' . __( 'Advanced', 'illdy-companion' ) . '</a></p>';
 			$html .= '<div class="import-content-container" id="welcome-hidden-content">';
 			$html .= '<div class="demo-content-container">';
@@ -54,7 +54,7 @@ class Illdy_Companion_Import_Data {
 	 * @return string
 	 */
 	private function generate_checkbox( $id, $label ) {
-		$string = '<label><input checked type="checkbox" class="demo-checkboxes" value="%1$s">%2$s</label>';
+		$string = '<label><input checked type="checkbox" class="demo-checkboxes" value="%1$s" name="options">%2$s</label>';
 		return sprintf( $string, $id, $label );
 	}
 
