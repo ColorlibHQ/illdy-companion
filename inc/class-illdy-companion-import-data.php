@@ -265,9 +265,44 @@ class Illdy_Companion_Import_Data {
 
 	}
 
+	/**
+	 * Repoints remote demo image URLs at the copies bundled with the theme.
+	 *
+	 * Only rewrites a URL when a file of the same name exists locally, so genuinely
+	 * remote assets are left alone. Operates on the raw JSON, which escapes its
+	 * slashes, hence the tolerant separator match.
+	 *
+	 * @param string $json Raw widget configuration.
+	 *
+	 * @return string
+	 */
+	private static function localise_demo_images( $json ) {
+		$dir = trailingslashit( get_template_directory() ) . 'layout/images/front-page/';
+		$uri = trailingslashit( get_template_directory_uri() ) . 'layout/images/front-page/';
+
+		return preg_replace_callback(
+			'#https?:(?:\\\\?/)+colorlibhub\.com[^"]*?\.(?:jpe?g|png|gif)#i',
+			function ( $matches ) use ( $dir, $uri ) {
+				$path = str_replace( '\\/', '/', $matches[0] );
+				$file = basename( (string) wp_parse_url( $path, PHP_URL_PATH ) );
+
+				return ( $file && file_exists( $dir . $file ) ) ? $uri . $file : $matches[0];
+			},
+			$json
+		);
+	}
+
 	public static function import_widgets() {
 
 		$json             = '{"footer-sidebar-1":{"text-5":{"title":"PRODUCTS","text":"<ul><li><a href=\"#\" title=\"Our work\">Our work<\/a><\/li><li><a href=\"#\" title=\"Club\">Club<\/a><\/li><li><a href=\"#\" title=\"News\">News<\/a><\/li><li><a href=\"#\" title=\"Announcement\">Announcement<\/a><\/li><\/ul>","filter":false}},"footer-sidebar-2":{"text-6":{"title":"INFORMATION","text":"<ul><li><a href=\"#\" title=\"Pricing\">Pricing<\/a><\/li><li><a href=\"#\" title=\"Terms\">Terms<\/a><\/li><li><a href=\"#\" title=\"Affiliates\">Affiliates<\/a><\/li><li><a href=\"#\" title=\"Blog\">Blog<\/a><\/li><\/ul>","filter":false}},"footer-sidebar-3":{"text-7":{"title":"SUPPORT","text":"<ul><li><a href=\"#\" title=\"Documentation\">Documentation<\/a><\/li><li><a href=\"#\" title=\"FAQs\">FAQs<\/a><\/li><li><a href=\"#\" title=\"Forums\">Forums<\/a><\/li><li><a href=\"#\" title=\"Contact\">Contact<\/a><\/li><\/ul>","filter":false}},"front-page-about-sidebar":{"illdy_skill-2":{"title":"Typography","percentage":60,"icon":"fa fa-font","color":"#f18b6d"},"illdy_skill-3":{"title":"Design","percentage":82,"icon":"fa fa-pencil","color":"#f1d204"},"illdy_skill-4":{"title":"Development","percentage":86,"icon":"fa fa-code","color":"#6a4d8a"}},"front-page-projects-sidebar":{"illdy_project-3":{"title":"Project 1","image":"https:\/\/colorlibhub.com\/illdy\/wp-content\/uploads\/sites\/58\/2016\/03\/front-page-project-1.jpg","url":""},"illdy_project-4":{"title":"Project 2","image":"https:\/\/colorlibhub.com\/illdy\/wp-content\/uploads\/sites\/58\/2016\/03\/front-page-project-2.jpg","url":""},"illdy_project-5":{"title":"Project 3","image":"https:\/\/colorlibhub.com\/illdy\/wp-content\/uploads\/sites\/58\/2016\/03\/front-page-project-3.jpg","url":""},"illdy_project-6":{"title":"Project 4","image":"https:\/\/colorlibhub.com\/illdy\/wp-content\/uploads\/sites\/58\/2016\/03\/front-page-project-4.jpg","url":""}},"front-page-services-sidebar":{"illdy_service-2":{"title":"Web Design","icon":"fa fa-pencil","entry":"Consectetur adipiscing elit. Praesent molestie urna hendrerit erat tincidunt tempus. Aliquam a leo risus. Fusce a metus non augue dapibus porttitor at in mauris. Pellentesque commodo...","color":"#f18b6d"},"illdy_service-3":{"title":"WEB DEVELOPMENT","icon":"fa fa-code","entry":"Consectetur adipiscing elit. Praesent molestie urna hendrerit erat tincidunt tempus. Aliquam a leo risus. Fusce a metus non augue dapibus porttitor at in mauris. Pellentesque commodo...","color":"#f1d204"},"illdy_service-4":{"title":"SEO Analisys","icon":"fa fa-search","entry":"Consectetur adipiscing elit. Praesent molestie urna hendrerit erat tincidunt tempus. Aliquam a leo risus. Fusce a metus non augue dapibus porttitor at in mauris. Pellentesque commodo...","color":"#6a4d8a"}},"front-page-counter-sidebar":{"illdy_counter-4":{"title":"Projects","data_from":1,"data_to":260,"data_speed":2000,"data_refresh_interval":100},"illdy_counter-3":{"title":"Clients","data_from":1,"data_to":120,"data_speed":2000,"data_refresh_interval":100},"illdy_counter-2":{"title":"Coffes","data_from":1,"data_to":260,"data_speed":2000,"data_refresh_interval":100}},"front-page-team-sidebar":{"illdy_person-5":{"title":"Mark Lawrance","image":"https://colorlibhub.com/illdy/wp-content/themes/illdy\/layout\/images\/front-page\/front-page-team-1.jpg","position":"Web Designer","entry":"Creative, detail-oriented, always focused.","facebook_url":"#","twitter_url":"#","linkedin_url":"#","color":"#f18b6d"},"illdy_person-4":{"title":"Jane Stenton","image":"https:\/\/colorlibhub.com\/illdy\/wp-content\/themes\/illdy\/layout\/images\/front-page\/front-page-team-2.jpg","position":"SEO Specialist","entry":"Curious, tech-geeck and gets serious when it comes to work.","facebook_url":"#","twitter_url":"#","linkedin_url":"#","color":"#f1d204"},"illdy_person-2":{"title":"John Smith","image":"https://colorlibhub.com/illdy/wp-content/themes/illdy\/layout\/images\/front-page\/front-page-team-3.jpg","position":"Developer","entry":"Enthusiastic, passionate with great sense of humor.","facebook_url":"#","twitter_url":"#","linkedin_url":"#","color":"#6a4d8a"}},"front-page-testimonials-sidebar":{"illdy_testimonial-1":{"name":"Jane Smith","image":"https://colorlibhub.com/illdy/wp-content/themes/illdy\/layout\/images\/front-page\/front-page-testimonial-1.jpg","testimonial":"                    Awesome theme with great design and helpfull support. If you don\u2019t know how to code your own WordPress theme, but you still want a good-looking website for your business, Illdy might be exactly what you need. It is a slick theme with a lot of of features to choose from. You can customize whatever section you want and you can rest assure that no matter what device your website is viewed on \u2013 it looks great.            "},"illdy_testimonial-2":{"name":"Jane Smith","image":"https:\/\/colorlibhub.com\/illdy\/wp-content\/uploads\/sites\/58/2016\/02\/mike-muller-127x127.jpg","testimonial":"                    Awesome theme with great design and helpfull support. If you don\u2019t know how to code your own WordPress theme, but you still want a good-looking website for your business, Illdy might be exactly what you need. It is a slick theme with a lot of of features to choose from. You can customize whatever section you want and you can rest assure that no matter what device your website is viewed on \u2013 it looks great.            "}}}';
+		/*
+		 * The shipped demo data points its images at colorlibhub.com. Most of those
+		 * files also ship inside the theme, so rewrite them to the local copies: demo
+		 * content then renders without a third-party request, keeps working if that
+		 * host changes, and does not disclose visitors to another server.
+		 */
+		$json = self::localise_demo_images( $json );
+
 		$config           = json_decode( $json );
 		$sidebars_widgets = get_option( 'sidebars_widgets' );
 
