@@ -2,61 +2,16 @@
 
 class Illdy_Companion_Import_Data {
 
-	function __construct() {
-
-		/**
-		 * Alter theme recommended actions
-		 */
-		add_filter( 'illdy_required_actions', array( $this, 'generate_import_data_container' ) );
-
-	}
-
-	public function generate_import_data_container( $actions ) {
-		$import_actions = array(
-			'set_static_frontpage' => esc_html__( 'Set front page to static page', 'illdy-companion' ),
-			'import_customizer'    => esc_html__( 'Import Customizer Setting', 'illdy-companion' ),
-			'import_widgets'       => esc_html__( 'Import Widgets', 'illdy-companion' ),
-		);
-		if ( is_customize_preview() ) {
-			$url  = 'themes.php?page=%1$s-welcome&tab=%2$s';
-			$html = '<a class="button button-primary" id="" href="' . esc_url( admin_url( sprintf( $url, 'illdy', 'recommended-actions' ) ) ) . '">' . __( 'Import Demo Content', 'illdy-companion' ) . '</a>';
-		} else {
-			$html  = '<p><a class="button button-primary epsilon-ajax-button" id="add_default_sections" href="#">' . __( 'Import Demo Content', 'illdy-companion' ) . '</a>';
-			$html .= '<a class="button epsilon-hidden-content-toggler" href="#welcome-hidden-content">' . __( 'Advanced', 'illdy-companion' ) . '</a></p>';
-			$html .= '<div class="import-content-container" id="welcome-hidden-content">';
-			$html .= '<div class="demo-content-container">';
-			$html .= '<div class="checkbox-group">';
-			foreach ( $import_actions as $id => $label ) {
-				$html .= $this->generate_checkbox( $id, $label );
-			}
-			$html .= '</div>';
-			$html .= '</div>';
-			$html .= '</div>';
-		}
-
-		$actions[] = array(
-			'id'          => 'illdy-req-ac-import-demo-content',
-			'title'       => esc_html__( 'Import Demo Content', 'illdy-companion' ),
-			'description' => esc_html__( 'Clicking the button below will add content, widgets and set static front page to your WordPress installation. Click advanced to customize the import process.', 'illdy-companion' ),
-			'help'        => $html,
-			'check'       => $this->check_content_import(),
-		);
-
-		return $actions;
-	}
-
-	/**
-	 * Generate HTML for a checkbox
+	/*
+	 * This class used to hook `illdy_required_actions` and hand the theme a blob of HTML
+	 * — the Import button, an "Advanced" toggle and three checkboxes — to render inside
+	 * its Recommended Actions list. Illdy 2.2.0 removed that list, and the plugin now
+	 * renders the same three options on its own page (Illdy_Companion_Importer_Page),
+	 * so the filter and its markup builders are gone.
 	 *
-	 * @param $id
-	 * @param $label
-	 *
-	 * @return string
+	 * The import steps below are untouched: what they write to the database is exactly
+	 * what the old flow wrote.
 	 */
-	private function generate_checkbox( $id, $label ) {
-		$string = '<label><input checked type="checkbox" class="demo-checkboxes" value="%1$s">%2$s</label>';
-		return sprintf( $string, $id, $label );
-	}
 
 	public function check_content_import() {
 		$illdy_content = get_option( 'illdy_show_required_actions' );

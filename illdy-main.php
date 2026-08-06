@@ -6,6 +6,9 @@ require_once plugin_dir_path( __FILE__ ) . 'inc/class-illdy-companion-helper.php
 // Include Illdy Companion Importer
 require_once plugin_dir_path( __FILE__ ) . 'inc/class-illdy-companion-import-data.php';
 
+// The importer's admin page. Loaded after the importer itself, which it calls into.
+require_once plugin_dir_path( __FILE__ ) . 'inc/class-illdy-companion-importer-page.php';
+
 /**
  * Plugin companion widgets
  */
@@ -27,37 +30,21 @@ if ( ! function_exists( 'illdy_companion_admin_scripts' ) ) {
 
 		/*
 		 * These used to load on every single admin screen, roughly 50 KB of CSS and JS
-		 * on pages that never reference any of it. Only two screens need them:
-		 * Appearance -> About Illdy runs the demo importer, and the widgets screen
-		 * hosts the icon picker and the media control. The Customizer is served by
-		 * illdy_companion_customizer_scripts() below.
+		 * on pages that never reference any of it. Only the widgets screen needs them
+		 * now — it hosts the icon picker and the media control. The Customizer is served
+		 * by illdy_companion_customizer_scripts() below, and the demo importer page
+		 * loads its own script from Illdy_Companion_Importer_Page.
 		 */
-		$is_welcome = ( 'appearance_page_illdy-welcome' === $hook_suffix );
-		$is_widgets = ( 'widgets.php' === $hook_suffix );
-
-		if ( ! $is_welcome && ! $is_widgets ) {
+		if ( 'widgets.php' !== $hook_suffix ) {
 			return;
 		}
 
 		wp_enqueue_style( 'illdy-companion-admin-css', ILLDY_COMPANION_ASSETS_DIR . 'css/admin.css', array(), ILLDY_COMPANION );
-
-		if ( $is_welcome ) {
-			wp_enqueue_script( 'illdy-companion-admin-js', ILLDY_COMPANION_ASSETS_DIR . 'js/admin.js', array( 'jquery' ), ILLDY_COMPANION, true );
-
-			wp_localize_script(
-				'illdy-companion-admin-js', 'illdyCompanion', array(
-					'ajaxurl' => esc_url( admin_url( 'admin-ajax.php' ) ),
-				)
-			);
-		}
-
-		if ( $is_widgets ) {
-			wp_enqueue_style( 'font-awesome', ILLDY_COMPANION_ASSETS_DIR . 'css/font-awesome.min.css', array(), '4.5.0', 'all' );
-			wp_enqueue_style( 'illdy-companion-iconpicker-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.css', array(), ILLDY_COMPANION );
-			wp_enqueue_style( 'illdy-companion-iconpicker-theme-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.grey.min.css', array(), ILLDY_COMPANION );
-			wp_enqueue_script( 'illdy-companion-iconpicker-js', ILLDY_COMPANION_ASSETS_DIR . 'js/iconpicker.min.js', array( 'jquery' ), ILLDY_COMPANION, true );
-			wp_enqueue_script( 'illdy-widget-text-editor', ILLDY_COMPANION_ASSETS_DIR . 'js/widget-text-editor.js', array( 'jquery' ), ILLDY_COMPANION, true );
-		}
+		wp_enqueue_style( 'font-awesome', ILLDY_COMPANION_ASSETS_DIR . 'css/font-awesome.min.css', array(), '4.5.0', 'all' );
+		wp_enqueue_style( 'illdy-companion-iconpicker-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.css', array(), ILLDY_COMPANION );
+		wp_enqueue_style( 'illdy-companion-iconpicker-theme-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.grey.min.css', array(), ILLDY_COMPANION );
+		wp_enqueue_script( 'illdy-companion-iconpicker-js', ILLDY_COMPANION_ASSETS_DIR . 'js/iconpicker.min.js', array( 'jquery' ), ILLDY_COMPANION, true );
+		wp_enqueue_script( 'illdy-widget-text-editor', ILLDY_COMPANION_ASSETS_DIR . 'js/widget-text-editor.js', array( 'jquery' ), ILLDY_COMPANION, true );
 
 	}
 
@@ -76,13 +63,13 @@ if ( ! function_exists( 'illdy_companion_customizer_scripts' ) ) {
 		wp_enqueue_style( 'font-awesome', ILLDY_COMPANION_ASSETS_DIR . 'css/font-awesome.min.css', array(), '4.5.0', 'all' );
 		wp_enqueue_script( 'illdy-companion-iconpicker-js', ILLDY_COMPANION_ASSETS_DIR . 'js/iconpicker.min.js', array( 'jquery' ), ILLDY_COMPANION, true );
 		wp_enqueue_style( 'illdy-companion-iconpicker-theme-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.grey.min.css', array(), ILLDY_COMPANION );
-		wp_enqueue_script( 'illdy-companion-admin-js', ILLDY_COMPANION_ASSETS_DIR . 'js/admin.js', array( 'jquery' ), ILLDY_COMPANION, true );
 
-		wp_localize_script(
-			'illdy-companion-admin-js', 'illdyCompanion', array(
-				'ajaxurl' => esc_url( admin_url( 'admin-ajax.php' ) ),
-			)
-		);
+		/*
+		 * admin.js is gone. Both of its handlers bound to welcome-screen markup — the
+		 * "Advanced" toggle and the import button — and it read a nonce off the
+		 * welcomeScreen object the theme localised. None of that exists any more; the
+		 * importer page ships its own script.
+		 */
 	}
 
 	add_action( 'customize_controls_enqueue_scripts', 'illdy_companion_customizer_scripts' );
@@ -109,15 +96,15 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 				)
 			);
 
-			if ( class_exists( 'Epsilon_Control_Text_Editor' ) ) {
+			if ( class_exists( 'Illdy_Control_Text_Editor' ) ) {
 
 				$wp_customize->add_control(
-					new Epsilon_Control_Text_Editor(
+					new Illdy_Control_Text_Editor(
 						$wp_customize, $prefix . '_services_general_entry', array(
 							'label'    => __( 'Entry', 'illdy-companion' ),
 							'section'  => $prefix . '_panel_services',
 							'priority' => 3,
-							'type'     => 'epsilon-text-editor',
+							'type'     => 'illdy-text-editor',
 						)
 					)
 				);
@@ -147,15 +134,15 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 				)
 			);
 
-			if ( class_exists( 'Epsilon_Control_Text_Editor' ) ) {
+			if ( class_exists( 'Illdy_Control_Text_Editor' ) ) {
 
 				$wp_customize->add_control(
-					new Epsilon_Control_Text_Editor(
+					new Illdy_Control_Text_Editor(
 						$wp_customize, $prefix . '_team_general_entry', array(
 							'label'    => __( 'Entry', 'illdy-companion' ),
 							'section'  => $prefix . '_panel_team',
 							'priority' => 3,
-							'type'     => 'epsilon-text-editor',
+							'type'     => 'illdy-text-editor',
 						)
 					)
 				);
@@ -185,15 +172,15 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 				)
 			);
 
-			if ( class_exists( 'Epsilon_Control_Text_Editor' ) ) {
+			if ( class_exists( 'Illdy_Control_Text_Editor' ) ) {
 
 				$wp_customize->add_control(
-					new Epsilon_Control_Text_Editor(
+					new Illdy_Control_Text_Editor(
 						$wp_customize, $prefix . '_about_general_entry', array(
 							'label'    => __( 'Entry', 'illdy-companion' ),
 							'section'  => $prefix . '_panel_about',
 							'priority' => 3,
-							'type'     => 'epsilon-text-editor',
+							'type'     => 'illdy-text-editor',
 						)
 					)
 				);
@@ -223,15 +210,15 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 				)
 			);
 
-			if ( class_exists( 'Epsilon_Control_Text_Editor' ) ) {
+			if ( class_exists( 'Illdy_Control_Text_Editor' ) ) {
 
 				$wp_customize->add_control(
-					new Epsilon_Control_Text_Editor(
+					new Illdy_Control_Text_Editor(
 						$wp_customize, $prefix . '_jumbotron_general_entry', array(
 							'label'    => __( 'Entry', 'illdy-companion' ),
 							'section'  => $prefix . '_jumbotron_general',
 							'priority' => 5,
-							'type'     => 'epsilon-text-editor',
+							'type'     => 'illdy-text-editor',
 						)
 					)
 				);
@@ -261,15 +248,15 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 				)
 			);
 
-			if ( class_exists( 'Epsilon_Control_Text_Editor' ) ) {
+			if ( class_exists( 'Illdy_Control_Text_Editor' ) ) {
 
 				$wp_customize->add_control(
-					new Epsilon_Control_Text_Editor(
+					new Illdy_Control_Text_Editor(
 						$wp_customize, $prefix . '_latest_news_general_entry', array(
 							'label'    => __( 'Entry', 'illdy-companion' ),
 							'section'  => $prefix . '_latest_news_general',
 							'priority' => 3,
-							'type'     => 'epsilon-text-editor',
+							'type'     => 'illdy-text-editor',
 						)
 					)
 				);
@@ -299,15 +286,15 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 				)
 			);
 
-			if ( class_exists( 'Epsilon_Control_Text_Editor' ) ) {
+			if ( class_exists( 'Illdy_Control_Text_Editor' ) ) {
 
 				$wp_customize->add_control(
-					new Epsilon_Control_Text_Editor(
+					new Illdy_Control_Text_Editor(
 						$wp_customize, $prefix . '_projects_general_entry', array(
 							'label'    => __( 'Entry', 'illdy-companion' ),
 							'section'  => $prefix . '_panel_projects',
 							'priority' => 3,
-							'type'     => 'epsilon-text-editor',
+							'type'     => 'illdy-text-editor',
 						)
 					)
 				);
@@ -336,15 +323,15 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 				)
 			);
 
-			if ( class_exists( 'Epsilon_Control_Text_Editor' ) ) {
+			if ( class_exists( 'Illdy_Control_Text_Editor' ) ) {
 
 				$wp_customize->add_control(
-					new Epsilon_Control_Text_Editor(
+					new Illdy_Control_Text_Editor(
 						$wp_customize, $prefix . '_contact_us_entry', array(
 							'label'    => __( 'Entry', 'illdy-companion' ),
 							'section'  => $prefix . '_contact_us',
 							'priority' => 3,
-							'type'     => 'epsilon-text-editor',
+							'type'     => 'illdy-text-editor',
 						)
 					)
 				);

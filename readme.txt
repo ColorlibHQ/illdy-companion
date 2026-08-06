@@ -83,8 +83,13 @@ Browser support
 * Removed IE-only CSS: progid:DXImageTransform filters and -ms-transform from Font Awesome, and the @-o-/@-ms-keyframes duplicates from the icon picker.
 * user-select now has a standard declaration rather than only prefixed ones.
 
+Demo importer
+* The importer has its own page: Appearance -> Import Demo Content. It previously had no UI of its own — it handed a block of HTML to the Illdy theme's "Recommended Actions" list and ran through the welcome screen's generic AJAX dispatcher. Illdy 2.2.0 removed that onboarding subsystem, so the plugin now owns the page, the nonce and the endpoint, and no longer depends on the theme shipping scaffolding for it.
+* The import asks for confirmation first. It replaces your Customizer settings and front page widgets, which was never stated before the old one-click button ran.
+* What gets imported is unchanged. The same three steps write the same values, so a site importing today gets what it would have got from the previous release.
+
 Performance
-* Admin CSS and JavaScript no longer load on every wp-admin screen. Font Awesome and the icon picker load only on the widgets screen, and the importer script only on Appearance -> About Illdy: roughly 50 KB per admin page request.
+* Admin CSS and JavaScript no longer load on every wp-admin screen. Font Awesome and the icon picker load only on the widgets screen, and the importer script only on its own page: roughly 50 KB per admin page request.
 * The Person, Project and Testimonial widgets stopped calling wp_enqueue_media() on every admin page, matching the guard the Service and Skill widgets already had.
 * Every asset is versioned so plugin updates invalidate caches.
 
