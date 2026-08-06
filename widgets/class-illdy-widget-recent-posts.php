@@ -122,8 +122,10 @@ class Illdy_Widget_Recent_Posts extends WP_Widget {
 	 * @return array Updated safe values to be saved.
 	 */
 	public function update( $new_instance, $old_instance ) {
-		$instance                  = array();
-		$instance['display_title'] = $new_instance['display_title'];
+		$instance = array();
+		// An unchecked checkbox is not submitted at all, so reading the key directly
+		// raised "Undefined array key" on every save with the toggle off.
+		$instance['display_title'] = empty( $new_instance['display_title'] ) ? '' : '1';
 		$instance['title']         = ( ! empty( $new_instance['title'] ) ) ? wp_kses_post( $new_instance['title'] ) : '';
 		$instance['numberofposts'] = ( ! empty( $new_instance['numberofposts'] ) ? absint( $new_instance['numberofposts'] ) : '' );
 

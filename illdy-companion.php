@@ -37,12 +37,33 @@ function illdy_companion_dashboard_widget() {
 	return Epsilon_Dashboard::instance( $epsilon_dashboard_args );
 }
 
-illdy_companion_dashboard_widget();
+/*
+ * Deferred to `init`. This call was previously made while the plugin file was still
+ * being parsed, and its first act is to translate the widget title. Resolving a string
+ * that early makes WordPress 6.7+ load the text domain just-in-time and emit
+ * "_load_textdomain_just_in_time was called incorrectly" for the illdy-companion
+ * domain. Epsilon_Dashboard only hooks wp_dashboard_setup, which runs much later, so
+ * nothing is missed by waiting.
+ */
+add_action( 'init', 'illdy_companion_dashboard_widget' );
 
-$current_theme  = wp_get_theme();
-$current_parent = $current_theme->parent();
+/**
+ * Whether Illdy (or a child of it) is the active theme.
+ *
+ * The widgets call illdy_get_image_id_from_image_url(), which the theme defines, so the
+ * plugin's main file must stay behind this guard.
+ *
+ * @return bool
+ */
+function illdy_companion_theme_is_active() {
+	$current_theme  = wp_get_theme();
+	$current_parent = $current_theme->parent();
 
-if ( 'Illdy' == $current_theme->get( 'Name' ) || ( $current_parent && 'Illdy' == $current_parent->get( 'Name' ) ) ) {
+	return 'Illdy' === $current_theme->get( 'Name' )
+		|| ( $current_parent && 'Illdy' === $current_parent->get( 'Name' ) );
+}
+
+if ( illdy_companion_theme_is_active() ) {
 
 	require_once plugin_dir_path( __FILE__ ) . 'illdy-main.php';
 
