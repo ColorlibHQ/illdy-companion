@@ -15,8 +15,16 @@ class Illdy_Widget_Parallax extends WP_Widget {
 	}
 
 	public function enqueue() {
-		wp_enqueue_style( 'illdy-companion-epsilon-styles', ILLDY_COMPANION_ASSETS_DIR . '/css/epsilon.css' );
-		wp_enqueue_script( 'illdy-companion-epsilon-object', ILLDY_COMPANION_ASSETS_DIR . '/js/epsilon.js', array( 'jquery' ) );
+		wp_enqueue_style( 'illdy-companion-epsilon-styles', ILLDY_COMPANION_ASSETS_DIR . '/css/epsilon.css', array(), ILLDY_COMPANION );
+		wp_enqueue_script( 'illdy-companion-epsilon-object', ILLDY_COMPANION_ASSETS_DIR . '/js/epsilon.js', array( 'jquery' ), ILLDY_COMPANION, true );
+
+		wp_localize_script(
+			'illdy-companion-epsilon-object',
+			'illdyCompanionMedia',
+			array(
+				'nonce' => wp_create_nonce( 'illdy_get_attachment_media' ),
+			)
+		);
 	}
 
 	function widget( $args, $instance ) {

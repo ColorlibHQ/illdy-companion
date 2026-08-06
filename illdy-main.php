@@ -353,12 +353,33 @@ if ( ! function_exists( 'illdy_companion_customize_register' ) ) {
 	add_action( 'customize_register', 'illdy_companion_customize_register', 20 );
 } // End if().
 
+/**
+ * Resolves an attachment id to its full-size URL for the widget media pickers.
+ *
+ * Previously this ran for any authenticated user with no nonce and no capability
+ * check, letting a subscriber walk attachment ids and read back the URL of any
+ * upload on the site, including media attached to private or draft posts.
+ */
 function illdy_get_attachment_image() {
-	$id  = intval( $_POST['attachment_id'] );
+
+	if ( ! current_user_can( 'upload_files' ) ) {
+		wp_send_json_error( 'forbidden', 403 );
+	}
+
+	check_ajax_referer( 'illdy_get_attachment_media', 'nonce' );
+
+	$id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
+
+	if ( ! $id ) {
+		wp_die( '', '', array( 'response' => 400 ) );
+	}
+
 	$src = wp_get_attachment_image_src( $id, 'full', false );
+
 	if ( ! empty( $src[0] ) ) {
 		echo esc_url( $src[0] );
 	}
-	die();
+
+	wp_die();
 }
 add_action( 'wp_ajax_illdy_get_attachment_media', 'illdy_get_attachment_image' );

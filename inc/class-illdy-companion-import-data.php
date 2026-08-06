@@ -67,12 +67,33 @@ class Illdy_Companion_Import_Data {
 		return false;
 	}
 
+	/**
+	 * The import steps that may be requested over AJAX.
+	 *
+	 * @return string[]
+	 */
+	public static function get_import_steps() {
+		return array( 'set_static_frontpage', 'import_customizer', 'import_widgets' );
+	}
+
 	public static function process_sample_content( $args = array() ) {
 
 		$imported = true;
 
 		if ( is_array( $args ) ) {
+			$allowed = self::get_import_steps();
+
 			foreach ( $args as $arg ) {
+				/*
+				 * $arg arrives from the request body and used to be interpolated straight
+				 * into a static call, so any public static method on this class could be
+				 * invoked and an unknown name was a fatal "call to undefined method".
+				 */
+				if ( ! is_string( $arg ) || ! in_array( $arg, $allowed, true ) ) {
+					$imported = false;
+					continue;
+				}
+
 				$response = self::{$arg}();
 				if ( $imported && is_array( $response ) ) {
 					$imported = false;

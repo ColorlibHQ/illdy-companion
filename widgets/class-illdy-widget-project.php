@@ -58,8 +58,9 @@ class Illdy_Widget_Project extends WP_Widget {
 
 		if ( $lightbox ) {
 			if ( $image_id && empty( $instance['video'] ) ) {
-				$url = wp_get_attachment_image_src( $image_id, 'full' );
-				$url = $url[0];
+				// Returns false when the attachment no longer exists.
+				$full = wp_get_attachment_image_src( $image_id, 'full' );
+				$url  = ! empty( $full[0] ) ? $full[0] : $instance['image'];
 			} elseif ( ! empty( $instance['video'] ) ) {
 				$url = $instance['video'];
 			} else {
@@ -69,7 +70,9 @@ class Illdy_Widget_Project extends WP_Widget {
 			$url = $instance['url'];
 		}
 
-		$output = '<a href="' . esc_url( $url ) . '" title="' . esc_attr( $instance['title'] ) . '" class="' . $class . '" data-fancybox="gallery" style="background-image: url(' . ( $image_id ? esc_url( $get_attachment_image_src[0] ) : esc_url( $instance['image'] ) ) . ');"><span class="project-overlay"></span></a>';
+		$background = ! empty( $get_attachment_image_src[0] ) ? $get_attachment_image_src[0] : $instance['image'];
+
+		$output = '<a href="' . esc_url( $url ) . '" title="' . esc_attr( $instance['title'] ) . '" class="' . esc_attr( $class ) . '" data-fancybox="gallery" style="background-image: url(' . esc_url( $background ) . ');"><span class="project-overlay"></span></a>';
 
 		echo $output;
 
@@ -96,17 +99,17 @@ class Illdy_Widget_Project extends WP_Widget {
 		?>
 		<p>
 			<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php echo esc_html__( 'Title:', 'illdy-companion' ); ?></label>
-			<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>">
+			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>">
 		</p>
 
 		<p>
 			<label for="<?php echo esc_attr( $this->get_field_name( 'image' ) ); ?>"><?php echo esc_html__( 'Image:', 'illdy-companion' ); ?></label>
-			<input type="text" class="widefat custom_media_url_<?php echo $this->get_field_id( 'image' ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'image' ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( 'image' ) ); ?>" value="<?php echo esc_attr( $instance['image'] ); ?>" style="margin-top:5px;">
+			<input type="text" class="widefat custom_media_url_<?php echo esc_attr( $this->get_field_id( 'image' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'image' ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( 'image' ) ); ?>" value="<?php echo esc_attr( $instance['image'] ); ?>" style="margin-top:5px;">
 			<input type="button" class="button button-primary custom_media_button" id="custom_media_button_service" data-fieldid="<?php echo esc_attr( $this->get_field_id( 'image' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'image' ) ); ?>" value="<?php echo esc_html__( 'Upload Image', 'illdy-companion' ); ?>" style="margin-top: 5px;">
 		</p>
 
 		<p>
-			<label for="<?php echo $this->get_field_name( 'video' ); ?>"><?php echo esc_html__( 'Video: (YouTube or Vimeo only)', 'illdy-companion' ); ?></label>
+			<label for="<?php echo esc_attr( $this->get_field_name( 'video' ) ); ?>"><?php echo esc_html__( 'Video: (YouTube or Vimeo only)', 'illdy-companion' ); ?></label>
 			<input type="text" class="widefat" name="<?php echo esc_attr( $this->get_field_name( 'video' ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( 'video' ) ); ?>" value="<?php echo esc_attr( $instance['video'] ); ?>" style="margin-top:5px;">
 		</p>
 

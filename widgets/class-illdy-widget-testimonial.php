@@ -50,7 +50,8 @@ class Illdy_Widget_Testimonial extends WP_Widget {
 
 		<div class="carousel-testimonial">
 			<div class="testimonial-image">
-				<img src="<?php echo $image_id ? esc_url( $get_attachment_image_src[0] ) : esc_url( $instance['image'] ); ?>">
+				<?php $image_url = ! empty( $get_attachment_image_src[0] ) ? $get_attachment_image_src[0] : $instance['image']; ?>
+				<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $instance['name'] ); ?>">
 			</div><!--/.testimonial-image-->
 			<div class="testimonial-content">
 				<blockquote><q><?php echo wp_kses_post( $instance['testimonial'] ); ?></q></blockquote>
@@ -83,19 +84,19 @@ class Illdy_Widget_Testimonial extends WP_Widget {
 
 		?>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'name' ); ?>"><?php _e( 'Name:', 'illdy-companion' ); ?></label>
-			<input class="widefat" id="<?php echo $this->get_field_id( 'name' ); ?>" name="<?php echo $this->get_field_name( 'name' ); ?>" type="text" value="<?php echo esc_attr( $instance['name'] ); ?>">
+			<label for="<?php echo esc_attr( $this->get_field_id( 'name' ) ); ?>"><?php _e( 'Name:', 'illdy-companion' ); ?></label>
+			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'name' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'name' ) ); ?>" type="text" value="<?php echo esc_attr( $instance['name'] ); ?>">
 		</p>
 
 		<p>
-			<label for="<?php echo $this->get_field_name( 'image' ); ?>"><?php _e( 'Image:', 'illdy-companion' ); ?></label>
-			<input type="text" class="widefat custom_media_url_<?php echo $this->get_field_id( 'image' ); ?>" name="<?php echo $this->get_field_name( 'image' ); ?>" id="<?php echo $this->get_field_id( 'image' ); ?>" value="<?php echo esc_attr( $instance['image'] ); ?>" style="margin-top:5px;">
-			<input type="button" class="button button-primary custom_media_button" id="custom_media_button_service" data-fieldid="<?php echo $this->get_field_id( 'image' ); ?>" name="<?php echo $this->get_field_name( 'image' ); ?>" value="<?php _e( 'Upload Image', 'illdy-companion' ); ?>" style="margin-top: 5px;">
+			<label for="<?php echo esc_attr( $this->get_field_name( 'image' ) ); ?>"><?php _e( 'Image:', 'illdy-companion' ); ?></label>
+			<input type="text" class="widefat custom_media_url_<?php echo esc_attr( $this->get_field_id( 'image' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'image' ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( 'image' ) ); ?>" value="<?php echo esc_attr( $instance['image'] ); ?>" style="margin-top:5px;">
+			<input type="button" class="button button-primary custom_media_button" id="custom_media_button_service" data-fieldid="<?php echo esc_attr( $this->get_field_id( 'image' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'image' ) ); ?>" value="<?php _e( 'Upload Image', 'illdy-companion' ); ?>" style="margin-top: 5px;">
 		</p>
 
 		<p class="illdy-editor-container">
-			<label for="<?php echo $this->get_field_id( 'testimonial' ); ?>"><?php _e( 'Testimonial:', 'illdy-companion' ); ?></label>
-			<textarea class="widefat" id="<?php echo $this->get_field_id( 'testimonial' ); ?>" name="<?php echo $this->get_field_name( 'testimonial' ); ?>">
+			<label for="<?php echo esc_attr( $this->get_field_id( 'testimonial' ) ); ?>"><?php _e( 'Testimonial:', 'illdy-companion' ); ?></label>
+			<textarea class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'testimonial' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'testimonial' ) ); ?>">
 					<?php echo wp_kses_post( $instance['testimonial'] ); ?>
 			</textarea>
 		</p>

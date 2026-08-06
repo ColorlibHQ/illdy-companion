@@ -156,7 +156,7 @@ if ( ! class_exists( 'Epsilon_Dashboard' ) ) {
 		 */
 		function render_dashboard_widget() {
 			?>
-			<style type="text/css">
+			<style>
 
 				.epsilon-dw-feed-item {
 					display: flex;
@@ -204,12 +204,20 @@ if ( ! class_exists( 'Epsilon_Dashboard' ) ) {
 							'utm_medium'   => 'dashboard_widget',
 						);
 						?>
+						<?php
+						// Everything below originates in a remote RSS feed, so it is
+						// escaped on output rather than trusted. wp_date() also respects
+						// the site timezone, where date() used the server's.
+						$item_timestamp = ! empty( $item['date'] ) ? (int) $item['date'] : 0;
+						?>
 						<li class="epsilon-dw-feed-item">
-							<span class="epsilon-dw-date-container">
-								<span class="epsilon-dw-day-container"><?php echo date( 'd', $item['date'] ); ?></span> 
-								<span class="epsilon-dw-month-container"><?php echo substr( date( 'M', $item['date'] ), 0, 3 ); ?></span>
-							</span>
-							<a href="<?php echo add_query_arg( $query_args, $item['link'] ); ?>" target="_blank"><?php echo $item['title']; ?></a>
+							<?php if ( $item_timestamp ) : ?>
+								<span class="epsilon-dw-date-container">
+									<span class="epsilon-dw-day-container"><?php echo esc_html( wp_date( 'd', $item_timestamp ) ); ?></span>
+									<span class="epsilon-dw-month-container"><?php echo esc_html( wp_date( 'M', $item_timestamp ) ); ?></span>
+								</span>
+							<?php endif; ?>
+							<a href="<?php echo esc_url( add_query_arg( $query_args, $item['link'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $item['title'] ); ?></a>
 							<div class="clear"></div>
 						</li>
 						<?php
