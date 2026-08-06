@@ -2,8 +2,9 @@
 Contributors: colorlibplugins, silkalns
 Tags: demo, one page, parallax, social, portfolio
 Requires at least: 5.8
-Tested up to: 6.8
-Stable tag: 2.1.4
+Tested up to: 7.0
+Requires PHP: 7.4
+Stable tag: 2.2.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -56,6 +57,36 @@ Currently it works only with Illdy theme.
 You can still use Illdy theme without this plugin but you won't be able to import demo content and use theme specific widgets that you see on front page of theme demo.
 
 == Changelog ==
+
+= 2.2.0 =
+Modernisation pass for WordPress 7 / PHP 8.5. Verified by booting the plugin
+together with the Illdy theme on WordPress 7.0.2 / PHP 8.5.6: the pair now
+produces zero PHP notices, warnings or deprecations, where the previous
+release produced seven.
+
+Compatibility
+* Fixed "Translation loading for the illdy-companion domain was triggered too early" on WordPress 6.7 and later. The dashboard widget was built while the plugin file was still parsing, and translated its title before init.
+* Recent Posts widget no longer raises an undefined-key warning every time it is saved with the "Display title" toggle off; an unchecked checkbox is never submitted.
+* Importer guards three get_option() results before indexing them. Assigning an index on false is deprecated in PHP 8.1.
+* Front page importing checks wp_insert_post() for errors and reuses existing pages instead of creating a duplicate "Front Page" and "Blog" on every run.
+* Widgets fall back cleanly when an attachment has been deleted instead of indexing a false return value.
+* Requires PHP 7.4 or later.
+
+Security
+* The attachment lookup used by the widget media pickers now requires the upload_files capability and a nonce. It previously ran for any logged-in user with neither, which let a subscriber resolve any upload's URL, including media attached to private or draft posts.
+* Demo import steps are validated against an allowlist. The requested step name was interpolated straight into a static method call.
+* The dashboard widget escapes the remote blog feed's titles and links, which were printed into wp-admin unescaped, and renders dates in the site timezone.
+* Escaped image URLs in the Person, Project and Testimonial widgets and 105 field attributes across all seven widget forms.
+* Person widget social links now open in a new tab with rel="noopener noreferrer"; target and rel were previously placed on the icon element instead of the link for Twitter, LinkedIn and GitHub.
+
+Browser support
+* Removed IE-only CSS: progid:DXImageTransform filters and -ms-transform from Font Awesome, and the @-o-/@-ms-keyframes duplicates from the icon picker.
+* user-select now has a standard declaration rather than only prefixed ones.
+
+Performance
+* Admin CSS and JavaScript no longer load on every wp-admin screen. Font Awesome and the icon picker load only on the widgets screen, and the importer script only on Appearance -> About Illdy: roughly 50 KB per admin page request.
+* The Person, Project and Testimonial widgets stopped calling wp_enqueue_media() on every admin page, matching the guard the Service and Skill widgets already had.
+* Every asset is versioned so plugin updates invalidate caches.
 
 = 2.1.4 =
 * Fixed critical bug in demo content import functionality 
