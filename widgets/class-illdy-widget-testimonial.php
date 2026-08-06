@@ -18,9 +18,15 @@ class Illdy_Widget_Testimonial extends WP_Widget {
 	/**
 	 *  Enqueue Scripts
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts( $hook_suffix = '' ) {
+		// wp_enqueue_media() pulls in the entire media library. This ran on every
+		// admin screen; widget forms only appear on these two.
+		if ( 'widgets.php' !== $hook_suffix && 'customize.php' !== $hook_suffix ) {
+			return;
+		}
+
 		wp_enqueue_media();
-		wp_enqueue_script( 'illdy-widget-upload-image', ILLDY_COMPANION_ASSETS_DIR . 'js/widget-upload-image.js', false, '1.0', true );
+		wp_enqueue_script( 'illdy-widget-upload-image', ILLDY_COMPANION_ASSETS_DIR . 'js/widget-upload-image.js', array( 'jquery' ), ILLDY_COMPANION, true );
 	}
 
 	/**

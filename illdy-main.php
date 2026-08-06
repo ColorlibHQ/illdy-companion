@@ -25,21 +25,38 @@ if ( ! function_exists( 'illdy_companion_admin_scripts' ) ) {
 	 */
 	function illdy_companion_admin_scripts( $hook_suffix ) {
 
-		wp_enqueue_style( 'illdy-companion-admin-css', plugins_url( '/assets/css/admin.css', __FILE__ ) );
-		wp_enqueue_style( 'font-awesome', plugins_url( '/assets/css/font-awesome.min.css', __FILE__ ), array(), '4.5.0', 'all' );
-		wp_enqueue_style( 'illdy-companion-iconpicker-css', plugins_url( '/assets/css/jquery.fonticonpicker.css', __FILE__ ) );
-		wp_enqueue_style( 'illdy-companion-iconpicker-theme-css', plugins_url( '/assets/css/jquery.fonticonpicker.grey.min.css', __FILE__ ) );
-		wp_enqueue_script( 'illdy-companion-iconpicker-js', plugins_url( '/assets/js/iconpicker.min.js', __FILE__ ), array( 'jquery' ) );
-		wp_enqueue_script( 'illdy-companion-admin-js', plugins_url( '/assets/js/admin.js', __FILE__ ), array( 'jquery' ) );
+		/*
+		 * These used to load on every single admin screen, roughly 50 KB of CSS and JS
+		 * on pages that never reference any of it. Only two screens need them:
+		 * Appearance -> About Illdy runs the demo importer, and the widgets screen
+		 * hosts the icon picker and the media control. The Customizer is served by
+		 * illdy_companion_customizer_scripts() below.
+		 */
+		$is_welcome = ( 'appearance_page_illdy-welcome' === $hook_suffix );
+		$is_widgets = ( 'widgets.php' === $hook_suffix );
 
-		wp_localize_script(
-			'illdy-companion-admin-js', 'illdyCompanion', array(
-				'ajaxurl' => esc_url( admin_url( 'admin-ajax.php' ) ),
-			)
-		);
+		if ( ! $is_welcome && ! $is_widgets ) {
+			return;
+		}
 
-		if ( 'widgets.php' == $hook_suffix ) {
-			wp_enqueue_script( 'illdy-widget-text-editor', ILLDY_COMPANION_ASSETS_DIR . 'js/widget-text-editor.js', false, '1.0', true );
+		wp_enqueue_style( 'illdy-companion-admin-css', ILLDY_COMPANION_ASSETS_DIR . 'css/admin.css', array(), ILLDY_COMPANION );
+
+		if ( $is_welcome ) {
+			wp_enqueue_script( 'illdy-companion-admin-js', ILLDY_COMPANION_ASSETS_DIR . 'js/admin.js', array( 'jquery' ), ILLDY_COMPANION, true );
+
+			wp_localize_script(
+				'illdy-companion-admin-js', 'illdyCompanion', array(
+					'ajaxurl' => esc_url( admin_url( 'admin-ajax.php' ) ),
+				)
+			);
+		}
+
+		if ( $is_widgets ) {
+			wp_enqueue_style( 'font-awesome', ILLDY_COMPANION_ASSETS_DIR . 'css/font-awesome.min.css', array(), '4.5.0', 'all' );
+			wp_enqueue_style( 'illdy-companion-iconpicker-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.css', array(), ILLDY_COMPANION );
+			wp_enqueue_style( 'illdy-companion-iconpicker-theme-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.grey.min.css', array(), ILLDY_COMPANION );
+			wp_enqueue_script( 'illdy-companion-iconpicker-js', ILLDY_COMPANION_ASSETS_DIR . 'js/iconpicker.min.js', array( 'jquery' ), ILLDY_COMPANION, true );
+			wp_enqueue_script( 'illdy-widget-text-editor', ILLDY_COMPANION_ASSETS_DIR . 'js/widget-text-editor.js', array( 'jquery' ), ILLDY_COMPANION, true );
 		}
 
 	}
@@ -55,11 +72,11 @@ if ( ! function_exists( 'illdy_companion_customizer_scripts' ) ) {
 	 */
 	function illdy_companion_customizer_scripts() {
 
-		wp_enqueue_style( 'illdy-companion-iconpicker-css', plugins_url( '/assets/css/jquery.fonticonpicker.css', __FILE__ ) );
-		wp_enqueue_style( 'font-awesome', plugins_url( '/assets/css/font-awesome.min.css', __FILE__ ), array(), '4.5.0', 'all' );
-		wp_enqueue_script( 'illdy-companion-iconpicker-js', plugins_url( '/assets/js/iconpicker.min.js', __FILE__ ), array( 'jquery' ) );
-		wp_enqueue_style( 'illdy-companion-iconpicker-theme-css', plugins_url( '/assets/css/jquery.fonticonpicker.grey.min.css', __FILE__ ) );
-		wp_enqueue_script( 'illdy-companion-admin-js', plugins_url( '/assets/js/admin.js', __FILE__ ), array( 'jquery' ), '', true );
+		wp_enqueue_style( 'illdy-companion-iconpicker-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.css', array(), ILLDY_COMPANION );
+		wp_enqueue_style( 'font-awesome', ILLDY_COMPANION_ASSETS_DIR . 'css/font-awesome.min.css', array(), '4.5.0', 'all' );
+		wp_enqueue_script( 'illdy-companion-iconpicker-js', ILLDY_COMPANION_ASSETS_DIR . 'js/iconpicker.min.js', array( 'jquery' ), ILLDY_COMPANION, true );
+		wp_enqueue_style( 'illdy-companion-iconpicker-theme-css', ILLDY_COMPANION_ASSETS_DIR . 'css/jquery.fonticonpicker.grey.min.css', array(), ILLDY_COMPANION );
+		wp_enqueue_script( 'illdy-companion-admin-js', ILLDY_COMPANION_ASSETS_DIR . 'js/admin.js', array( 'jquery' ), ILLDY_COMPANION, true );
 
 		wp_localize_script(
 			'illdy-companion-admin-js', 'illdyCompanion', array(
