@@ -78,7 +78,20 @@ class Illdy_Widget_Project extends WP_Widget {
 
 		$background = ! empty( $get_attachment_image_src[0] ) ? $get_attachment_image_src[0] : $instance['image'];
 
-		$output = '<a href="' . esc_url( $url ) . '" title="' . esc_attr( $instance['title'] ) . '" class="' . esc_attr( $class ) . '" data-fancybox="gallery" style="background-image: url(' . esc_url( $background ) . ');"><span class="project-overlay"></span></a>';
+		/*
+		 * The link's only content was an empty overlay span and its only label a title
+		 * attribute, which screen readers do not reliably announce — so it read as an
+		 * unlabelled link. The image is a CSS background, so there is no alt text to
+		 * fall back on either. The visually hidden title fixes that, and as a side
+		 * effect gives the block widget editor something to preview: it treats markup
+		 * with no text and no <img> as an empty preview and shows "No preview
+		 * available" instead of the widget.
+		 */
+		$label = '' !== trim( (string) $instance['title'] )
+			? '<span class="screen-reader-text">' . esc_html( $instance['title'] ) . '</span>'
+			: '';
+
+		$output = '<a href="' . esc_url( $url ) . '" title="' . esc_attr( $instance['title'] ) . '" class="' . esc_attr( $class ) . '" data-fancybox="gallery" style="background-image: url(' . esc_url( $background ) . ');"><span class="project-overlay"></span>' . $label . '</a>';
 
 		echo $output;
 

@@ -78,6 +78,7 @@ Security
 * The dashboard widget escapes the remote blog feed's titles and links, which were printed into wp-admin unescaped, and renders dates in the site timezone.
 * Escaped image URLs in the Person, Project and Testimonial widgets and 105 field attributes across all seven widget forms.
 * Person widget social links now open in a new tab with rel="noopener noreferrer"; target and rel were previously placed on the icon element instead of the link for Twitter, LinkedIn and GitHub.
+* Project widget links carry their title as visually hidden text. The link's only content was an empty overlay element and its only label a title attribute, which screen readers do not reliably announce, and its image is a CSS background so there was no alt text either — the link was announced with no name. Nothing about the design changes. It also fixes the widget reporting "No preview available" in the block widget editor, which treats markup with no text and no image as an empty preview.
 
 Browser support
 * Removed IE-only CSS: progid:DXImageTransform filters and -ms-transform from Font Awesome, and the @-o-/@-ms-keyframes duplicates from the icon picker.
