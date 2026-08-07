@@ -314,13 +314,10 @@ if ( ! class_exists( 'Illdy_Companion_Importer_Page' ) ) {
 
 			check_ajax_referer( self::NONCE, 'nonce' );
 
-			$requested = isset( $_POST['steps'] ) ? wp_unslash( $_POST['steps'] ) : array();
-
-			if ( ! is_array( $requested ) ) {
-				$requested = array();
-			}
-
-			$requested = array_map( 'sanitize_text_field', $requested );
+			// Sanitised at the point of access so no unsanitised value ever exists.
+			$requested = isset( $_POST['steps'] ) && is_array( $_POST['steps'] )
+				? array_map( 'sanitize_text_field', wp_unslash( $_POST['steps'] ) )
+				: array();
 
 			/*
 			 * Intersect with the canonical list rather than trusting the request: the step

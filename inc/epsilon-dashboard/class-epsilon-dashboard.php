@@ -78,7 +78,21 @@ if ( ! class_exists( 'Epsilon_Dashboard' ) ) {
 		 */
 		public function setup_vars( $args ) {
 			if ( ! isset( $args['widget_title'] ) ) {
-				$args['widget_title'] = apply_filters( 'epsilon_dashboard_widget_name', esc_html__( 'WordPress Guides/Tutorials', 'illdy-companion' ) );
+				$title = esc_html__( 'WordPress Guides/Tutorials', 'illdy-companion' );
+
+				/**
+				 * Filters the title of the dashboard feed widget.
+				 *
+				 * @param string $title Widget title.
+				 */
+				$title = apply_filters( 'illdy_companion_dashboard_widget_name', $title );
+
+				/*
+				 * The original name predates this plugin owning the code and is not
+				 * prefixed with the plugin's own slug. It still runs so anything already
+				 * filtering it keeps working; new code should use the filter above.
+				 */
+				$args['widget_title'] = apply_filters( 'epsilon_dashboard_widget_name', $title ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Retained for backwards compatibility.
 			}
 			$this->dashboard_name = $args['widget_title'];
 			$this->feeds          = (array) $args['feed_url'];
@@ -109,8 +123,8 @@ if ( ! class_exists( 'Epsilon_Dashboard' ) ) {
 			$feed->enable_order_by_date( true );
 			$feed->set_cache_class( 'WP_Feed_Cache' );
 			$feed->set_file_class( 'WP_SimplePie_File' );
-			$feed->set_cache_duration( apply_filters( 'wp_feed_cache_transient_lifetime', 7200, $this->feeds ) );
-			do_action_ref_array( 'wp_feed_options', array( $feed, $this->feeds ) );
+			$feed->set_cache_duration( apply_filters( 'wp_feed_cache_transient_lifetime', 7200, $this->feeds ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core filter.
+			do_action_ref_array( 'wp_feed_options', array( $feed, $this->feeds ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core action.
 			$feed->strip_comments( true );
 			$feed->strip_htmltags(
 				array(

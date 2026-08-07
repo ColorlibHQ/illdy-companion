@@ -75,7 +75,18 @@ if ( illdy_companion_theme_is_active() ) {
 	function illdy_companion_admin_notice() {
 	?>
 		<div class="notice-warning notice">
-			<p><?php printf( __( 'In order to use the <strong>Illdy Companion</strong> plugin you have to also install the %1$sIlldy Theme%2$s', 'illdy-companion' ), '<a href="https://wordpress.org/themes/illdy/" target="_blank">', '</a>' ); ?></p>
+			<p>
+			<?php
+			/* translators: 1: opening link tag to the Illdy theme on WordPress.org, 2: closing link tag. */
+			$illdy_companion_notice = __( 'In order to use the <strong>Illdy Companion</strong> plugin you have to also install the %1$sIlldy Theme%2$s', 'illdy-companion' );
+
+			printf(
+				wp_kses( $illdy_companion_notice, array( 'strong' => array() ) ),
+				'<a href="' . esc_url( 'https://wordpress.org/themes/illdy/' ) . '" target="_blank" rel="noopener noreferrer">',
+				'</a>'
+			);
+			?>
+			</p>
 		</div>
 		<?php
 	}
