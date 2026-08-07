@@ -9,7 +9,7 @@ class Illdy_Companion_Import_Data {
 	/*
 	 * This class used to hook `illdy_required_actions` and hand the theme a blob of HTML
 	 * — the Import button, an "Advanced" toggle and three checkboxes — to render inside
-	 * its Recommended Actions list. Illdy 2.2.0 removed that list, and the plugin now
+	 * its Recommended Actions list. Illdy 2.3.0 removed that list, and the plugin now
 	 * renders the same three options on its own page (Illdy_Companion_Importer_Page),
 	 * so the filter and its markup builders are gone.
 	 *

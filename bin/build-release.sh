@@ -52,6 +52,7 @@ rsync -a \
 	--exclude 'bin' \
 	--exclude 'dist' \
 	--exclude 'CLAUDE.md' \
+	--exclude '*.md' \
 	--exclude '.claude' \
 	--exclude '*.map' \
 	--exclude '.DS_Store' \

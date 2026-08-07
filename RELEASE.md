@@ -5,7 +5,7 @@ over **SVN**, and to GitHub as a tagged release. Unlike the theme, a plugin upda
 live the moment it is committed — there is no review queue between you and every
 installed site, so the checks below matter.
 
-Current version: **2.2.0** (WordPress 7.0, PHP 7.4+).
+Current version: **2.3.0** (WordPress 7.0, PHP 7.4+).
 
 ## Before you build
 
@@ -34,7 +34,7 @@ Then, in order:
    ```bash
    wp plugin check illdy-companion
    ```
-   2.2.0 ships with **one** finding: `hidden_files` for `.gitignore`, which the build
+   2.3.0 ships with **one** finding: `hidden_files` for `.gitignore`, which the build
    script excludes, so the shipped zip is clean. Anything else is new and worth
    reading before you ship it.
 
@@ -62,7 +62,7 @@ Produces:
 |---|---|
 | `dist/illdy-companion.zip` | installable zip; the GitHub release asset |
 | `dist/svn/trunk/` | copy into SVN `trunk/` |
-| `dist/svn/tags/2.2.0/` | copy into SVN `tags/2.2.0/` |
+| `dist/svn/tags/2.3.0/` | copy into SVN `tags/2.3.0/` |
 
 The script fails if a hidden file survives into the build.
 
@@ -80,15 +80,15 @@ cd svn-illdy-companion
 rsync -a --delete --exclude '.svn' /path/to/illdy-companion/dist/svn/trunk/ trunk/
 
 # Stage the tag.
-mkdir -p tags/2.2.0
-rsync -a --delete --exclude '.svn' /path/to/illdy-companion/dist/svn/tags/2.2.0/ tags/2.2.0/
+mkdir -p tags/2.3.0
+rsync -a --delete --exclude '.svn' /path/to/illdy-companion/dist/svn/tags/2.3.0/ tags/2.3.0/
 
 # Tell SVN about added and removed files. It does not notice on its own.
 svn add --force trunk tags --auto-props --parents --depth infinity -q
 svn status | grep '^!' | awk '{print $2}' | xargs -r svn rm
 
 svn status                       # read this before committing
-svn commit -m "Release 2.2.0"
+svn commit -m "Release 2.3.0"
 ```
 
 `svn status | grep '^!'` matters. SVN keeps deleted files unless told, so a file
@@ -117,12 +117,12 @@ No remote is configured in this working copy:
 ```bash
 git remote add origin git@github.com:ColorlibHQ/illdy-companion.git
 git push -u origin main
-git tag -a v2.2.0 -m "Illdy Companion 2.2.0"
+git tag -a v2.3.0 -m "Illdy Companion 2.3.0"
 git push origin --tags
-gh release create v2.2.0 dist/illdy-companion.zip --title "2.2.0"
+gh release create v2.3.0 dist/illdy-companion.zip --title "2.3.0"
 ```
 
-## What 2.2.0 verified
+## What 2.3.0 verified
 
 - Plugin Check went from **92 findings to 1**, and that one is `.gitignore`, which the
   build excludes.
