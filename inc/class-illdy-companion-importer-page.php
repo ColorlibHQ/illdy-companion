@@ -1,12 +1,16 @@
 <?php
 /**
- * Admin page for the demo content importer.
+ * The demo content importer's UI.
  *
- * The importer used to have no UI of its own: it injected markup into the Illdy theme's
- * "Recommended Actions" list and rode the welcome screen's generic AJAX dispatcher. Illdy
- * 2.2.0 removed that onboarding subsystem, so the plugin now owns the whole flow — its
- * own page, its own nonce, its own endpoint — and no longer depends on the theme shipping
- * scaffolding for it.
+ * This renders as a tab on the theme's About Illdy screen (Appearance → About Illdy →
+ * Import Demo Content), registered through the theme's `illdy_welcome_tabs` filter and
+ * `illdy_welcome_tab_import` action. If the theme does not offer that screen — an older
+ * Illdy, or a child theme that removed it — the same panel is registered as a standalone
+ * page instead, so the importer is never unreachable.
+ *
+ * What the plugin owns either way is the part that matters: its own nonce and its own
+ * AJAX endpoint. It used to hand the theme a blob of HTML and ride a generic
+ * class/method dispatcher belonging to the old welcome screen.
  *
  * The import itself is unchanged. Every step still runs through
  * Illdy_Companion_Import_Data, so what lands in the database is exactly what it always was.
@@ -40,23 +44,97 @@ if ( ! class_exists( 'Illdy_Companion_Importer_Page' ) ) {
 		 */
 		const CAP = 'manage_options';
 
+		/**
+		 * Tab id on the theme's About Illdy screen.
+		 */
+		const TAB = 'import';
+
 		public function __construct() {
-			add_action( 'admin_menu', array( $this, 'register_page' ) );
-			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 			add_action( 'wp_ajax_illdy_companion_import_demo', array( $this, 'handle_import' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+
+			/*
+			 * Deferred: plugins are loaded before themes, so Illdy_Welcome does not exist
+			 * yet at this point and testing for it here would always fall through to the
+			 * standalone page. after_setup_theme is the first hook that runs with the
+			 * theme's functions.php parsed, and is still far ahead of admin_menu.
+			 */
+			add_action( 'after_setup_theme', array( $this, 'register_ui' ) );
 		}
 
 		/**
-		 * The admin-page hook suffix, used to scope asset loading.
+		 * Attaches the importer either as a tab on About Illdy or as its own page.
+		 */
+		public function register_ui() {
+			if ( self::theme_has_welcome_screen() ) {
+				add_filter( 'illdy_welcome_tabs', array( $this, 'register_tab' ) );
+				add_action( 'illdy_welcome_tab_' . self::TAB, array( $this, 'render_panel' ) );
+
+				return;
+			}
+
+			add_action( 'admin_menu', array( $this, 'register_page' ) );
+		}
+
+		/**
+		 * Whether the active theme offers the About Illdy screen to hang a tab on.
+		 *
+		 * @return bool
+		 */
+		public static function theme_has_welcome_screen() {
+			return class_exists( 'Illdy_Welcome' );
+		}
+
+		/**
+		 * The admin-page hook suffix the importer renders on, whichever mode it is in.
 		 *
 		 * @return string
 		 */
 		public static function hook_suffix() {
+			if ( self::theme_has_welcome_screen() ) {
+				return Illdy_Welcome::hook_suffix();
+			}
+
 			return 'appearance_page_' . self::SLUG;
 		}
 
 		/**
-		 * Adds the page under Appearance.
+		 * Adds the importer tab to the theme's About screen.
+		 *
+		 * Inserted directly after Getting Started, which is where step 2 points.
+		 *
+		 * @param array $tabs Tab id => label.
+		 *
+		 * @return array
+		 */
+		public function register_tab( $tabs ) {
+			if ( ! is_array( $tabs ) ) {
+				return $tabs;
+			}
+
+			$label = esc_html__( 'Import Demo Content', 'illdy-companion' );
+			$after = 'getting-started';
+
+			if ( ! array_key_exists( $after, $tabs ) ) {
+				$tabs[ self::TAB ] = $label;
+
+				return $tabs;
+			}
+
+			$out = array();
+			foreach ( $tabs as $id => $tab_label ) {
+				$out[ $id ] = $tab_label;
+
+				if ( $after === $id ) {
+					$out[ self::TAB ] = $label;
+				}
+			}
+
+			return $out;
+		}
+
+		/**
+		 * Fallback: registers a standalone page when the theme has no About screen.
 		 */
 		public function register_page() {
 			add_theme_page(
@@ -69,13 +147,25 @@ if ( ! class_exists( 'Illdy_Companion_Importer_Page' ) ) {
 		}
 
 		/**
-		 * Loads the page's script only on the page itself.
+		 * Loads the importer script only where the panel actually renders.
 		 *
 		 * @param string $hook_suffix Current admin page.
 		 */
 		public function enqueue( $hook_suffix ) {
 			if ( self::hook_suffix() !== $hook_suffix ) {
 				return;
+			}
+
+			/*
+			 * On the About screen the panel is one tab among several, so there is no
+			 * point loading this on the others.
+			 */
+			if ( self::theme_has_welcome_screen() ) {
+				$requested = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+				if ( self::TAB !== $requested ) {
+					return;
+				}
 			}
 
 			wp_enqueue_script(
@@ -133,7 +223,7 @@ if ( ! class_exists( 'Illdy_Companion_Importer_Page' ) ) {
 		}
 
 		/**
-		 * Renders the page.
+		 * Renders the standalone page. Only used when the theme has no About screen.
 		 */
 		public function render() {
 			if ( ! current_user_can( self::CAP ) ) {
@@ -142,18 +232,36 @@ if ( ! class_exists( 'Illdy_Companion_Importer_Page' ) ) {
 			?>
 			<div class="wrap">
 				<h1><?php esc_html_e( 'Import Demo Content', 'illdy-companion' ); ?></h1>
+				<?php $this->render_panel(); ?>
+			</div>
+			<?php
+		}
 
-				<p class="description" style="max-width:46em;font-size:14px;">
-					<?php esc_html_e( 'This sets up the Illdy front page the way the theme demo looks: it creates the Front Page and Blog pages, fills in the Customizer settings, and adds the front page widgets.', 'illdy-companion' ); ?>
-				</p>
+		/**
+		 * Renders the importer itself.
+		 *
+		 * Called directly as the `illdy_welcome_tab_import` handler, and from render()
+		 * in the standalone fallback, so it emits no page chrome of its own.
+		 */
+		public function render_panel() {
+			if ( ! current_user_can( self::CAP ) ) {
+				echo '<div class="notice notice-error inline"><p>' . esc_html__( 'Your account cannot import demo content.', 'illdy-companion' ) . '</p></div>';
+
+				return;
+			}
+			?>
+			<div class="illdy-import-panel">
+				<h3><?php esc_html_e( 'Set the front page up like the demo', 'illdy-companion' ); ?></h3>
+
+				<p><?php esc_html_e( 'This creates the Front Page and Blog pages, points Settings → Reading at them, fills in the Customizer settings, and adds the front page widgets. It is optional: everything it does can be done by hand.', 'illdy-companion' ); ?></p>
 
 				<?php if ( $this->already_imported() ) : ?>
-					<div class="notice notice-info inline" style="margin:1em 0;max-width:46em;">
-						<p><?php esc_html_e( 'Demo content has already been imported on this site. Running it again will replace your current settings with the demo ones.', 'illdy-companion' ); ?></p>
+					<div class="notice notice-info inline">
+						<p><?php esc_html_e( 'Demo content has already been imported on this site. Running it again replaces your current settings with the demo ones.', 'illdy-companion' ); ?></p>
 					</div>
 				<?php endif; ?>
 
-				<div class="notice notice-warning inline" style="margin:1em 0;max-width:46em;">
+				<div class="notice notice-warning inline">
 					<p>
 						<strong><?php esc_html_e( 'This overwrites existing settings.', 'illdy-companion' ); ?></strong>
 						<?php esc_html_e( 'Customizer options and front page widgets are replaced by the demo values. Your posts, pages and media are not touched.', 'illdy-companion' ); ?>
@@ -161,18 +269,20 @@ if ( ! class_exists( 'Illdy_Companion_Importer_Page' ) ) {
 				</div>
 
 				<form id="illdy-companion-import-form" method="post" onsubmit="return false;">
-					<h2 class="title" style="margin-top:1.5em;"><?php esc_html_e( 'What to import', 'illdy-companion' ); ?></h2>
+					<h4><?php esc_html_e( 'What to import', 'illdy-companion' ); ?></h4>
 
 					<fieldset>
 						<legend class="screen-reader-text"><?php esc_html_e( 'What to import', 'illdy-companion' ); ?></legend>
-						<?php foreach ( $this->steps() as $illdy_step_id => $illdy_step_label ) : ?>
-							<p style="margin:.35em 0;">
-								<label>
-									<input type="checkbox" class="illdy-import-step" value="<?php echo esc_attr( $illdy_step_id ); ?>" checked>
-									<?php echo esc_html( $illdy_step_label ); ?>
-								</label>
-							</p>
-						<?php endforeach; ?>
+						<ul class="illdy-import-steps">
+							<?php foreach ( $this->steps() as $illdy_step_id => $illdy_step_label ) : ?>
+								<li>
+									<label>
+										<input type="checkbox" class="illdy-import-step" value="<?php echo esc_attr( $illdy_step_id ); ?>" checked>
+										<?php echo esc_html( $illdy_step_label ); ?>
+									</label>
+								</li>
+							<?php endforeach; ?>
+						</ul>
 					</fieldset>
 
 					<p class="submit">
