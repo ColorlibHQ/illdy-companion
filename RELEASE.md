@@ -5,7 +5,7 @@ over **SVN**, and to GitHub as a tagged release. Unlike the theme, a plugin upda
 live the moment it is committed — there is no review queue between you and every
 installed site, so the checks below matter.
 
-Current version: **2.3.0** (WordPress 7.0, PHP 7.4+).
+Current version: **2.3.1** (WordPress 7.2, PHP 7.4+).
 
 ## Before you build
 
