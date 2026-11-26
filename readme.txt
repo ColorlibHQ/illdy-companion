@@ -2,9 +2,9 @@
 Contributors: colorlibplugins, silkalns
 Tags: demo, one page, parallax, social, portfolio
 Requires at least: 5.8
-Tested up to: 7.0
+Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,11 @@ Currently it works only with Illdy theme.
 You can still use Illdy theme without this plugin but you won't be able to import demo content and use theme specific widgets that you see on front page of theme demo.
 
 == Changelog ==
+
+= 2.3.1 =
+* Removed Google+ from the icon list in the widgets. Google+ shut down in 2019.
+* The "From our blog" Dashboard widget no longer logs two SimplePie deprecation notices on every Dashboard visit.
+* Tested with WordPress 7.2 and PHP 8.6.
 
 = 2.3.0 =
 Modernisation pass for WordPress 7 / PHP 8.5. Verified by booting the plugin
